@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Environment, Html, Lightformer } from '@react-three/drei';
+import { Environment, Lightformer } from '@react-three/drei';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,8 @@ import { destinations, type Destination } from '@/lib/portfolio';
 function usePalette() {
   return useMemo(() => {
     const style = getComputedStyle(document.documentElement);
-    return Object.fromEntries(['space', 'mint', 'gold', 'ice', 'surface'].map(name => [name, style.getPropertyValue(`--scene-${name}`).trim()]));
+    const read = (name: string) => style.getPropertyValue(`--scene-${name}`).trim();
+    return { space: read('space'), mint: read('mint'), gold: read('gold'), ice: read('ice'), surface: read('surface') };
   }, []);
 }
 
@@ -43,7 +44,7 @@ function Orbit({ radius, color, rotation = 0 }: { radius: number; color: string;
 }
 
 function Monument({ index, active, paused, onSelect }: { index: number; active: boolean; paused: boolean; onSelect: (id: Destination) => void }) {
-  const node = destinations[index];
+  const node = destinations[index] ?? destinations[0];
   const palette = usePalette();
   const ref = useRef<THREE.Group>(null);
   const phase = useRef(index);
@@ -53,13 +54,21 @@ function Monument({ index, active, paused, onSelect }: { index: number; active: 
     const map = new THREE.DataTexture(data, 64, 64); map.needsUpdate = true; return map;
   }, []);
   useEffect(() => () => texture.dispose(), [texture]);
-  useFrame((_, rawDelta) => {
+  const projected = useMemo(() => new THREE.Vector3(), []);
+  useFrame(({ camera, size }, rawDelta) => {
     const group = ref.current;
     if (!group) return;
     const delta = Math.min(rawDelta, 0.05);
     if (!paused) { phase.current += delta * 0.4; group.rotation.y += delta * 0.13; group.position.y = Math.sin(phase.current) * 0.13; }
     const target = active ? 1.17 : 1;
     group.scale.lerp(new THREE.Vector3(target, target, target), 1 - Math.exp(-3 * delta));
+    const label = document.getElementById(`world-label-${node.id}`);
+    if (label) {
+      group.getWorldPosition(projected);
+      projected.y -= index === 0 ? 2 : 0.85;
+      projected.project(camera);
+      label.style.transform = `translate(-50%, -50%) translate(${(projected.x * 0.5 + 0.5) * size.width}px, ${(-projected.y * 0.5 + 0.5) * size.height}px)`;
+    }
   });
   const color = index === 2 || index === 4 ? palette.gold : palette.mint;
   return <group position={[...node.position]}>
@@ -76,11 +85,6 @@ function Monument({ index, active, paused, onSelect }: { index: number; active: 
         <mesh rotation-x={Math.PI / 2}><torusGeometry args={[0.75, 0.009, 5, 64]} /><meshBasicMaterial color={color} transparent opacity={0.5} /></mesh>
       </>}
     </group>
-    <Html position={[index === 0 ? 0.4 : 0, index === 0 ? -2.25 : -1, 0]} center zIndexRange={[4, 0]}>
-      <Button variant="navigation" className={`world-label world-label-${node.id} ${active ? 'world-label-active' : ''}`} onClick={() => onSelect(node.id)}>
-        <span className="world-index">0{index + 1}</span><span>{node.label}</span><span className="label-arrow">↗</span>
-      </Button>
-    </Html>
   </group>;
 }
 
@@ -92,10 +96,11 @@ function Rig({ active }: { active: Destination | null }) {
     const delta = Math.min(rawDelta, 0.05);
     const node = destinations.find(item => item.id === active);
     const narrow = size.width < 700;
-    target.set(narrow ? 0 : -1.7, 7.5, narrow ? 19 : 15.5);
+    const portrait = size.height > size.width;
+    target.set(narrow ? 1 : -1.7, portrait ? 10.5 : 7.5, narrow ? 25 : portrait ? 26 : 15.5);
     target.x += pointer.x * 0.3 + (node ? node.position[0] * 0.22 : 0);
     camera.position.lerp(target, 1 - Math.exp(-2 * delta));
-    const aim = new THREE.Vector3(narrow ? 0 : -1.7, active ? 0.25 : 0, 0);
+    const aim = new THREE.Vector3(narrow ? 1 : portrait ? 0 : -1.7, active ? 0.25 : 0, 0);
     look.current.lerp(aim, 1 - Math.exp(-2 * delta));
     camera.lookAt(look.current);
   });
@@ -120,5 +125,5 @@ function Scene({ active, paused, onSelect }: { active: Destination | null; pause
 }
 
 export function Universe(props: { active: Destination | null; paused: boolean; onSelect: (id: Destination) => void }) {
-  return <div className="universe" aria-label="Interactive 3D portfolio galaxy"><Canvas dpr={[1, 1.5]} camera={{ position: [-1.7, 7.5, 15.5], fov: 43 }} gl={{ antialias: true }}><Suspense fallback={null}><Scene {...props} /></Suspense></Canvas></div>;
+  return <div className="universe" aria-label="Interactive 3D portfolio galaxy"><Canvas dpr={[1, 1.5]} camera={{ position: [-1.7, 7.5, 15.5], fov: 43 }} gl={{ antialias: true }}><Suspense fallback={null}><Scene {...props} /></Suspense></Canvas><div className="world-labels">{destinations.map((node, index) => <Button key={node.id} id={`world-label-${node.id}`} variant="navigation" className={`world-label world-label-${node.id} ${props.active === node.id ? 'world-label-active' : ''}`} onClick={() => props.onSelect(node.id)}><span className="world-index">0{index + 1}</span><span>{node.label}</span><span className="label-arrow">↗</span></Button>)}</div></div>;
 }

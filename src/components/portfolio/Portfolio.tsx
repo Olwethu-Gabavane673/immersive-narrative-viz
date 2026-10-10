@@ -57,6 +57,7 @@ export function Portfolio({ active = null }: { active?: Destination | null }) {
   const shell = useRef<HTMLDivElement>(null);
   const node = destinations.find(d => d.id === active);
   const index = destinations.findIndex(d => d.id === active);
+  const next = destinations[(index + 1) % destinations.length] ?? destinations[0];
   const select = (id: Destination) => navigate({ to: paths[id] });
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setPaused(true);
@@ -93,10 +94,10 @@ export function Portfolio({ active = null }: { active?: Destination | null }) {
         <div className="panel-topline"><Button variant="navigation" onClick={() => navigate({ to: '/' })}><ArrowLeft size={15} />Universe</Button><span>0{index + 1} / 05</span><Button variant="instrument" size="icon" aria-label="Close destination" onClick={() => navigate({ to: '/' })}><X /></Button></div>
         <div className="eyebrow">{node.tag}</div><h1>{node.title}<span>.</span></h1><p className="panel-subtitle">{node.subtitle}</p>
         <div className="panel-content"><Content active={active} /></div>
-        <div className="panel-next"><Button variant="navigation" onClick={() => select(destinations[(index + 1) % destinations.length].id)}>Next destination<span>{destinations[(index + 1) % destinations.length].label}</span><ArrowRight /></Button></div>
+        <div className="panel-next"><Button variant="navigation" onClick={() => select(next.id)}>Next destination<span>{next.label}</span><ArrowRight /></Button></div>
       </div>}
       <div className="scene-caption"><span className="crosshair">+</span><span>{active ? node?.tag : 'THE ORIGIN'}<small>01. A CONNECTED MIND</small></span></div>
-      {!active && <div className="scene-coordinates">SYSTEM 01 / PERSONAL UNIVERSE<span>33° 55′ S · 18° 25′ E</span></div>}
+      {!active && <div className="scene-coordinates">SYSTEM 01 / PERSONAL UNIVERSE<span>LOGIC · CURIOSITY · CRAFT</span></div>}
     </main>
     <footer className="site-footer"><div className="availability"><span className="status-light" /><span>OPEN TO OPPORTUNITIES</span></div><div className="footer-center"><span className="footer-line" /><span>{active ? 'YOUR NEXT DESTINATION AWAITS' : 'EVERY CONNECTION HAS A STORY'}</span><ArrowDown size={13} /></div><div className="scene-tools"><Button variant="instrument" size="icon" aria-label={paused ? 'Resume animations' : 'Pause animations'} title={paused ? 'Resume animations' : 'Pause animations'} onClick={() => setPaused(!paused)}>{paused ? <Play /> : <Pause />}</Button><Button variant="instrument" size="icon" aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} onClick={async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else await shell.current?.requestFullscreen(); } catch { setFullscreen(false); } }}>{fullscreen ? <Minimize /> : <Maximize />}</Button><span>© 2026 ON</span></div></footer>
   </div>;
