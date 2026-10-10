@@ -146,11 +146,11 @@
 :root {
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'DM Sans', sans-serif;
-  --scene-space: #070e11;
-  --scene-mint: #9ae9c8;
-  --scene-gold: #d1b583;
-  --scene-ice: #d9ece8;
-  --scene-surface: #163a32;
+  --scene-space: oklch(0.135 0.014 230);
+  --scene-mint: oklch(0.87 0.09 166);
+  --scene-gold: oklch(0.78 0.07 83);
+  --scene-ice: oklch(0.93 0.022 179);
+  --scene-surface: oklch(0.32 0.047 173);
   --panel: oklch(0.155 0.016 209 / 96%);
   --soft-foreground: oklch(0.79 0.014 180);
   --gold: oklch(0.76 0.07 83);
@@ -261,7 +261,7 @@ td small { display: block; margin-top: 5px; font-size: 8px; color: var(--muted-f
 @media (max-height: 800px) and (min-width: 701px) { .site-header { height: 90px; } .portfolio-main { top: 90px; bottom: 65px; } .site-footer { height: 65px; } .intro { top: 8%; } .intro h1 { font-size: 69px; } .intro-role { margin-top: 20px; font-size: 17px; } .intro-copy { margin: 14px 0 18px; } .eyebrow { margin-bottom: 18px; } }
 @media (max-width: 1000px) { .site-header nav { gap: 3px; } .identity-name { display: none; } .intro h1 { font-size: 72px; } .intro-role { font-size: 18px; } .footer-center { display: none; } .destination-panel { max-width: 50%; } .destination-panel h1 { font-size: 34px; } }
 @media (max-width: 700px) {
-  .portfolio-shell { min-height: 880px; height: 100svh; }
+  .portfolio-shell { min-height: 800px; height: 100svh; }
   .site-header { height: 82px; margin: 0 6%; }
   .monogram { font-size: 33px; }
   .site-header nav { display: none; }
@@ -296,3 +296,8 @@ td small { display: block; margin-top: 5px; font-size: 8px; color: var(--muted-f
   .panel-lead { font-size: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+.world-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 4; }
+.world-labels .world-label { position: absolute; left: 0; top: 0; pointer-events: auto; }
+.destination-open .world-labels { opacity: 0.6; }
+@media (max-width: 700px) { .world-labels .world-label-about { display: none; } .destination-open .world-labels { display: none; } }
