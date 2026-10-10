@@ -8,7 +8,16 @@ import { destinations, type Destination } from '@/lib/portfolio';
 function usePalette() {
   return useMemo(() => {
     const style = getComputedStyle(document.documentElement);
-    const read = (name: string) => style.getPropertyValue(`--scene-${name}`).trim();
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext('2d');
+    const read = (name: string) => {
+      if (!context) return 'transparent';
+      context.fillStyle = style.getPropertyValue(`--scene-${name}`).trim();
+      context.fillRect(0, 0, 1, 1);
+      const pixels = context.getImageData(0, 0, 1, 1).data;
+      return `rgb(${pixels[0]}, ${pixels[1]}, ${pixels[2]})`;
+    };
     return { space: read('space'), mint: read('mint'), gold: read('gold'), ice: read('ice'), surface: read('surface') };
   }, []);
 }
