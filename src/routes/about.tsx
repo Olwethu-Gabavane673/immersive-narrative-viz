@@ -1,0 +1,3 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { Portfolio, portfolioHead } from '@/components/portfolio/Portfolio';
+export const Route = createFileRoute('/about')({ ssr: false, head: () => portfolioHead('About — The Origin', 'Meet Olwethu Ngalo: an analytical, hands-on IT professional pursuing technical support and systems development.'), component: () => <Portfolio active="about" /> });
