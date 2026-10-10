@@ -1,0 +1,3 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { Portfolio, portfolioHead } from '@/components/portfolio/Portfolio';
+export const Route = createFileRoute('/education')({ ssr: false, head: () => portfolioHead('Education — The Foundations', 'Oracle Java certification, Google technical support, NQF Level 5 systems development and Nelson Mandela University academic achievements.'), component: () => <Portfolio active="education" /> });
